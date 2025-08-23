@@ -99,7 +99,6 @@ def analyze(source: str, enabled_rules: List[str] | None = None) -> List[Dict[st
             elif m.group(3) and m.group(4):
                 fixed_buffers[m.group(3)] = (int(m.group(4)), i)
 
-        # Track delete
         dm = RE_DELETE.search(line)
         if dm:
             deleted_vars.add(dm.group(2))
