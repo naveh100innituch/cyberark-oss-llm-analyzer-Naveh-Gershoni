@@ -7,3 +7,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 ENV MODEL_PATH="/home/vulnuser/app/models"
 USER vulnuser
 ENTRYPOINT ["python", "analyzer.py"]
+##final Docker
