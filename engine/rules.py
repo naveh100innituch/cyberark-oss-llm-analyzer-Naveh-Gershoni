@@ -55,77 +55,78 @@ RE_FOPEN_NO_CLOSE = re.compile(r"\bfopen\s*\([^)]*\);(?!.*fclose)")
 RE_HARDCODED_URL = re.compile(r'"https?://[^"]+"')
 RE_UNCHECKED_RETURN = re.compile(r"\b(read|write|fread|fwrite|malloc|realloc)\s*\([^)]*\)\s*;")
 RE_MEMSET_OVERFLOW = re.compile(r"\bmemset\s*\(\s*([^,]+)\s*,\s*[^,]+\s*,\s*([^)]+)\)")
-RE_VLA = re.compile(r"\b\w+\s+\w+\s*\[\s*\w+\s*\]")  # Variable Length Arrays
+RE_VLA = re.compile(r"\b\w+\s+\w+\s*\[\s*\w+\s*\]")  
 RE_POINTER_COMPARISON = re.compile(r"\bif\s*\(\s*\*\w+\s*==\s*NULL\s*\)")
 RE_FORMAT_STRING_VULN = re.compile(r"\bfprintf\s*\(\s*[^,]+,\s*[^\"].*?\)")
 RE_CMD_INJECTION = re.compile(r"\b(exec|system|popen).*?\(")
-RE_PATH_TRAVERSAL = re.compile(r'"\.\./|\.\.\\')  # ../ in string literals
+RE_PATH_TRAVERSAL = re.compile(r'"\.\./|\.\.\\')  
 RE_UNSAFE_CAST = re.compile(r"\(\s*(int|long|char\s*\*|void\s*\*)\s*\)\s*\w+")
 RE_INFINITE_RECURSION = re.compile(r"\b(\w+)\s*\([^)]*\)\s*{\s*.*\1\s*\(")
 RE_MISALIGNED_ACCESS = re.compile(r"\b(uint16_t|uint32_t|uint64_t|int16_t|int32_t|int64_t)\s*\*\s*\w+")
 
 RULE_FIXES = {
-    "RE_FIXED_BUF": "Ensure buffer allocations are large enough and validated before use. Consider using std::vector or bounds-checked arrays.",
-    "RE_MEMCPY": "Validate the size argument against the destination buffer size. Prefer safer functions like memcpy_s or std::copy.",
-    "RE_ALLOC_MUL": "Check for integer overflows before allocation. Use safe multiplication or check for maximum sizes.",
-    "RE_UINT32_DECL": "Ensure all arithmetic on uint32_t is safe from overflow.",
-    "RE_DELETE": "After deleting a pointer, set it to nullptr to avoid use-after-free.",
-    "RE_UNSAFE_FUNCS": "Replace unsafe functions (gets, strcpy, strcat, sprintf) with safer alternatives (fgets, strncpy, strncat, snprintf).",
-    "RE_FORMAT_STRING": "Ensure format strings are not user-controlled. Use constant format strings.",
-    "RE_DANGEROUS_CALLS": "Avoid system calls with user input. Use safer APIs or sanitize input.",
-    "RE_INSECURE_RANDOM": "Replace rand/srand with cryptographically secure random generators.",
-    "RE_HARDCODED_SECRET": "Do not hardcode secrets. Use secure storage or environment variables.",
-    "RE_FOPEN": "Validate file paths to prevent path traversal. Always check fopen return values.",
-    "RE_LOOP": "Ensure loops have a proper termination condition.",
-    "RE_CAST": "Avoid unsafe casts. Use static_cast, reinterpret_cast carefully.",
-    "RE_UNINIT_VAR": "Initialize variables before use.",
-    "RE_MEM_LEAK": "Free all allocated memory. Consider smart pointers.",
-    "RE_DEPRECATED_FUNCS": "Replace deprecated functions with modern alternatives.",
-    "RE_PTR_ARITH": "Be cautious with pointer arithmetic to avoid buffer overflows.",
-    "RE_HARDCODED_PATH": "Avoid hardcoded file paths. Use configuration or relative paths.",
-    "RE_FILE_PERMS": "Use restrictive file permissions. Avoid writing with 'w' mode blindly.",
-    "RE_DIV_ZERO": "Check denominator before division.",
-    "RE_SIGNED_UNSIGNED": "Match signedness of variables in expressions to avoid unexpected behavior.",
-    "RE_RECURSION": "Ensure recursion has a proper base case.",
-    "RE_GLOBAL_VAR": "Avoid global/static variables if possible.",
-    "RE_NULL_DEREF": "Check pointers for null before dereferencing.",
-    "RE_BUF_UNDERFLOW": "Ensure array indices are non-negative and within bounds.",
-    "RE_NO_CHECK": "Check return values of functions like fopen, malloc, realloc, fread, fwrite.",
-    "RE_UNUSED_VAR": "Remove unused variables or use them properly.",
-    "RE_STRNCPY_OVERFLOW": "Ensure strncpy does not exceed destination buffer size.",
-    "RE_STRCPY_NULL": "Do not copy to a NULL destination pointer.",
-    "RE_DOUBLE_FREE": "Avoid freeing the same memory twice.",
-    "RE_STACK_OVERFLOW": "Avoid large stack allocations. Use heap allocation for large arrays.",
-    "RE_USE_BEFORE_INIT": "Initialize variables before use.",
-    "RE_PTR_SUBSCRIPT": "Check pointer and index before dereferencing.",
-    "RE_PRINTF_USER_INPUT": "Do not pass user input directly as format string.",
-    "RE_SQL_INJECTION": "Use parameterized queries or sanitize SQL input.",
-    "RE_SIGNED_OVERFLOW": "Check for overflow before performing arithmetic operations.",
-    "RE_SHIFT_OVERFLOW": "Ensure shift operations are within valid range.",
-    "RE_RACE_CONDITION": "Use proper locking mechanisms to prevent race conditions.",
-    "RE_UNLOCK_WITHOUT_LOCK": "Unlock only after locking. Avoid unlocking uninitialized mutex.",
-    "RE_FD_LEAK": "Always close file descriptors and sockets after use.",
-    "RE_CLOSE_MISSING": "Ensure resources are closed properly.",
-    "RE_HARD_CODED_CREDENTIALS": "Use secure credential storage, not hardcoded values.",
-    "RE_WEAK_CRYPTO": "Avoid weak algorithms like MD5/SHA1. Use SHA256 or stronger.",
-    "RE_EXCESSIVE_MACRO": "Avoid complex macros. Consider inline functions or constexpr.",
-    "RE_SPRINTF_OVERFLOW": "Replace sprintf with snprintf to avoid buffer overflow.",
-    "RE_ARRAY_OOB": "Check array indices to prevent out-of-bounds access.",
-    "RE_DANGLING_PTR": "Set pointers to nullptr after free to avoid dangling references.",
-    "RE_FORMAT_STRING_VAR": "Do not use variables as format strings. Use constant format strings.",
-    "RE_MUTEX_NO_LOCK": "Lock mutex before accessing shared resources.",
-    "RE_FOPEN_NO_CLOSE": "Always close files after opening them.",
-    "RE_HARDCODED_URL": "Do not hardcode URLs. Use configuration or input validation.",
-    "RE_UNCHECKED_RETURN": "Check return values for errors.",
-    "RE_MEMSET_OVERFLOW": "Ensure memset does not exceed buffer size.",
-    "RE_VLA": "Avoid variable length arrays. Use std::vector or fixed-size arrays.",
-    "RE_POINTER_COMPARISON": "Check pointer before dereferencing. Use safe null checks.",
-    "RE_FORMAT_STRING_VULN": "Ensure format string is constant and not user-controlled.",
-    "RE_CMD_INJECTION": "Sanitize input before executing commands. Avoid system() with user input.",
-    "RE_PATH_TRAVERSAL": "Sanitize file paths to prevent '../' attacks.",
-    "RE_UNSAFE_CAST": "Avoid unsafe casts. Prefer static_cast, reinterpret_cast carefully.",
-    "RE_INFINITE_RECURSION": "Add proper base case to recursive functions.",
-    "RE_MISALIGNED_ACCESS": "Ensure pointer alignment matches the type to avoid undefined behavior."
+    "FIXED_BUF": "Ensure buffer allocations are large enough and validated before use. Consider using std::vector or bounds-checked arrays.",
+    "MEMCPY": "Validate the size argument against the destination buffer size. Prefer safer functions like memcpy_s or std::copy.",
+    "ALLOC_MUL": "Check for integer overflows before allocation. Use safe multiplication or check for maximum sizes.",
+    "UINT32_DECL": "Ensure all arithmetic on uint32_t is safe from overflow.",
+    "DELETE": "After deleting a pointer, set it to nullptr to avoid use-after-free.",
+    "UNSAFE_FUNCS": "Replace unsafe functions (gets, strcpy, strcat, sprintf) with safer alternatives (fgets, strncpy, strncat, snprintf).",
+    "FORMAT_STRING": "Ensure format strings are not user-controlled. Use constant format strings.",
+    "DANGEROUS_CALLS": "Avoid system calls with user input. Use safer APIs or sanitize input.",
+    "INSECURE_RANDOM": "Replace rand/srand with cryptographically secure random generators.",
+    "HARDCODED_SECRET": "Do not hardcode secrets. Use secure storage or environment variables.",
+    "FOPEN": "Validate file paths to prevent path traversal. Always check fopen return values.",
+    "LOOP": "Ensure loops have a proper termination condition.",
+    "CAST": "Avoid unsafe casts. Use static_cast, reinterpret_cast carefully.",
+    "UNINIT_VAR": "Initialize variables before use.",
+    "MEM_LEAK": "Free all allocated memory. Consider smart pointers.",
+    "DEPRECATED_FUNCS": "Replace deprecated functions with modern alternatives.",
+    "PTR_ARITH": "Be cautious with pointer arithmetic to avoid buffer overflows.",
+    "HARDCODED_PATH": "Avoid hardcoded file paths. Use configuration or relative paths.",
+    "FILE_PERMS": "Use restrictive file permissions. Avoid writing with 'w' mode blindly.",
+    "DIV_ZERO": "Check denominator before division.",
+    "SIGNED_UNSIGNED": "Match signedness of variables in expressions to avoid unexpected behavior.",
+    "RECURSION": "Ensure recursion has a proper base case.",
+    "GLOBAL_VAR": "Avoid global/static variables if possible.",
+    "NULL_DEREF": "Check pointers for null before dereferencing.",
+    "BUF_UNDERFLOW": "Ensure array indices are non-negative and within bounds.",
+    "NO_CHECK": "Check return values of functions like fopen, malloc, realloc, fread, fwrite.",
+    "UNUSED_VAR": "Remove unused variables or use them properly.",
+    "STRNCPY_OVERFLOW": "Ensure strncpy does not exceed destination buffer size.",
+    "STRCPY_NULL": "Do not copy to a NULL destination pointer.",
+    "DOUBLE_FREE": "Avoid freeing the same memory twice.",
+    "STACK_OVERFLOW": "Avoid large stack allocations. Use heap allocation for large arrays.",
+    "USE_BEFORE_INIT": "Initialize variables before use.",
+    "PTR_SUBSCRIPT": "Check pointer and index before dereferencing.",
+    "PRINTF_USER_INPUT": "Do not pass user input directly as format string.",
+    "SQL_INJECTION": "Use parameterized queries or sanitize SQL input.",
+    "SIGNED_OVERFLOW": "Check for overflow before performing arithmetic operations.",
+    "SHIFT_OVERFLOW": "Ensure shift operations are within valid range.",
+    "RACE_CONDITION": "Use proper locking mechanisms to prevent race conditions.",
+    "UNLOCK_WITHOUT_LOCK": "Unlock only after locking. Avoid unlocking uninitialized mutex.",
+    "FD_LEAK": "Always close file descriptors and sockets after use.",
+    "CLOSE_MISSING": "Ensure resources are closed properly.",
+    "HARD_CODED_CREDENTIALS": "Use secure credential storage, not hardcoded values.",
+    "WEAK_CRYPTO": "Avoid weak algorithms like MD5/SHA1. Use SHA256 or stronger.",
+    "EXCESSIVE_MACRO": "Avoid complex macros. Consider inline functions or constexpr.",
+    "SPRINTF_OVERFLOW": "Replace sprintf with snprintf to avoid buffer overflow.",
+    "ARRAY_OOB": "Check array indices to prevent out-of-bounds access.",
+    "DANGLING_PTR": "Set pointers to nullptr after free to avoid dangling references.",
+    "FORMAT_STRING_VAR": "Do not use variables as format strings. Use constant format strings.",
+    "MUTEX_NO_LOCK": "Lock mutex before accessing shared resources.",
+    "FOPEN_NO_CLOSE": "Always close files after opening them.",
+    "HARDCODED_URL": "Do not hardcode URLs. Use configuration or input validation.",
+    "UNCHECKED_RETURN": "Check return values for errors.",
+    "MEMSET_OVERFLOW": "Ensure memset does not exceed buffer size.",
+    "VLA": "Avoid variable length arrays. Use std::vector or fixed-size arrays.",
+    "POINTER_COMPARISON": "Check pointer before dereferencing. Use safe null checks.",
+    "FORMAT_STRING_VULN": "Ensure format string is constant and not user-controlled.",
+    "CMD_INJECTION": "Sanitize input before executing commands. Avoid system() with user input.",
+    "PATH_TRAVERSAL": "Sanitize file paths to prevent '../' attacks.",
+    "UNSAFE_CAST": "Avoid unsafe casts. Prefer static_cast, reinterpret_cast carefully.",
+    "INFINITE_RECURSION": "Add proper base case to recursive functions.",
+    "MISALIGNED_ACCESS": "Ensure pointer alignment matches the type to avoid undefined behavior.",
+    "LOGIC_BUG":  "Review logic for tracking freed memory.",
 }
 
 
@@ -190,7 +191,7 @@ def analyze(source: str, enabled_rules: List[str] | None = None) -> List[Dict[st
                             "line": i,
                             "message": f"Possible heap-based buffer overflow: memcpy into {name} (size {sz}) with size '{size_expr}' not checked.",
                             "snippet": _window(lines, i-1),
-                            "fix": RULE_FIXES.get("RE_MEMCPY", "No fix available"),
+                            "fix": RULE_FIXES.get("MEMCPY", "No fix available"),
 
                         })
                         break
@@ -205,7 +206,7 @@ def analyze(source: str, enabled_rules: List[str] | None = None) -> List[Dict[st
                         "line": i,
                         "message": f"Potential integer overflow in allocation: '{line.strip()}'",
                         "snippet": _window(lines, i-1),
-                        "fix": RULE_FIXES.get("RE_ALLOC_MUL", "No fix available"),
+                        "fix": RULE_FIXES.get("ALLOC_MUL", "No fix available"),
 
                     })
 
@@ -217,7 +218,7 @@ def analyze(source: str, enabled_rules: List[str] | None = None) -> List[Dict[st
                         "line": i,
                         "message": f"Possible use-after-free: variable '{var}' referenced after delete.",
                         "snippet": _window(lines, i-1),
-                        "fix": RULE_FIXES.get("RE_DELETE", "No fix available"),
+                        "fix": RULE_FIXES.get("DELETE", "No fix available"),
                     })
                     break
 
@@ -228,7 +229,7 @@ def analyze(source: str, enabled_rules: List[str] | None = None) -> List[Dict[st
                     "line": i,
                     "message": "Stats bug: 'total_freed' increments count instead of freed bytes.",
                     "snippet": _window(lines, i-1),
-                    "fix": "Review logic for tracking freed memory.",
+                    "fix": RULE_FIXES.get("LOGIC_BUG", "No fix available"),
                 })
 
         generic_rules = [

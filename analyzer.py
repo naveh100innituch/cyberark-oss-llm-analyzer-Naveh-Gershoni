@@ -5,6 +5,8 @@ from typing import List
 from engine import rules as rules_engine
 from engine import formats
 from engine import model as model_engine
+from engine.rules import RULE_FIXES
+
 
 def main():
     ap = argparse.ArgumentParser(description="Local C/C++ vulnerability analyzer (rules + optional local LLM).")
@@ -51,20 +53,14 @@ def print_text_with_fixes(findings):
         rule = f.get("rule", "Finding")
         msg = f.get("message", "")
         snippet = f.get("snippet", "")
-        fix = f.get("fix", "No fix available.")
+        fix = RULE_FIXES.get(rule, "No fix available")
         llm_expl = f.get("llm_explanation", "")
 
         print(f"Line {line} | Rule: {rule}")
         print(f"Message: {msg}")
-        if snippet:
-            print("Snippet:")
-            print(f"  {snippet}")
         if fix:
             print(f"Suggested Fix: {fix}")
         if llm_expl:
             print(f"LLM Explanation: {llm_expl}")
-        print("-" * 80)
-
-
 if __name__ == "__main__":
     main()
