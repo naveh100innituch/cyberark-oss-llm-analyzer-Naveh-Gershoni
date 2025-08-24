@@ -66,10 +66,10 @@ RE_MISALIGNED_ACCESS = re.compile(r"\b(uint16_t|uint32_t|uint64_t|int16_t|int32_
 
 RULE_FIXES = {
     "FIXED_BUF": "Ensure buffer allocations are large enough and validated before use. Consider using std::vector or bounds-checked arrays.",
-    "MEMCPY": "Validate the size argument against the destination buffer size. Prefer safer functions like memcpy_s or std::copy.",
-    "ALLOC_MUL": "Check for integer overflows before allocation. Use safe multiplication or check for maximum sizes.",
+    "HEAP_OVERFLOW": "Validate the size argument against the destination buffer size. Prefer safer functions like memcpy_s or std::copy.",
+    "INT_OVERFLOW": "Check for integer overflows before allocation. Use safe multiplication or check for maximum sizes.",
     "UINT32_DECL": "Ensure all arithmetic on uint32_t is safe from overflow.",
-    "DELETE": "After deleting a pointer, set it to nullptr to avoid use-after-free.",
+    "UAF": "After deleting a pointer, set it to nullptr to avoid use-after-free.",
     "UNSAFE_FUNCS": "Replace unsafe functions (gets, strcpy, strcat, sprintf) with safer alternatives (fgets, strncpy, strncat, snprintf).",
     "FORMAT_STRING": "Ensure format strings are not user-controlled. Use constant format strings.",
     "DANGEROUS_CALLS": "Avoid system calls with user input. Use safer APIs or sanitize input.",
@@ -218,7 +218,7 @@ def analyze(source: str, enabled_rules: List[str] | None = None) -> List[Dict[st
                         "line": i,
                         "message": f"Possible use-after-free: variable '{var}' referenced after delete.",
                         "snippet": _window(lines, i-1),
-                        "fix": RULE_FIXES.get("DELETE", "No fix available"),
+                        "fix": RULE_FIXES.get("UAF", "No fix available"),
                     })
                     break
 
