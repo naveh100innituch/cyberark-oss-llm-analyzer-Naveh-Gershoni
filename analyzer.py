@@ -15,28 +15,21 @@ def main():
     ap.add_argument("--rules", type=str, default="", help="Comma-separated rule names to enable")
     args = ap.parse_args()
 
-    # קריאת קובץ המקור
     with open(args.path, "r", encoding="utf-8", errors="ignore") as f:
         src = f.read()
 
-    # הפעלת כללים ספציפיים אם צוין
     enabled_rules: List[str] | None = None
     if args.rules.strip():
         enabled_rules = [r.strip() for r in args.rules.split(",") if r.strip()]
 
-    # ניתוח הקוד לפי הכללים
     findings = rules_engine.analyze(src, enabled_rules)
-
-    # הסברים מהמודל (LLM) ושדות תיקון
     if not args.no_llm:
         for f in findings:
             expl = model_engine.explain(f.get("snippet",""), f.get("rule","Finding"))
             if expl:
                 f["llm_explanation"] = expl
-            # הוספת ברירת מחדל ל-fix אם לא קיים
             f.setdefault("fix", "No fix available.")
 
-    # אם אין ממצאים
     if not findings:
         message = f"Analysis Complete: No security or memory issues detected in '{args.path}'."
         if args.json:
@@ -46,7 +39,6 @@ def main():
             print(message)
         return
 
-    # הדפסה בפורמט JSON או טקסט
     if args.json:
         formats.print_json(findings)
     else:
@@ -54,7 +46,6 @@ def main():
 
 
 def print_text_with_fixes(findings):
-    """הדפסה קריאה של הממצאים כולל תיקונים והסבר LLM"""
     for f in findings:
         line = f.get("line", "?")
         rule = f.get("rule", "Finding")
