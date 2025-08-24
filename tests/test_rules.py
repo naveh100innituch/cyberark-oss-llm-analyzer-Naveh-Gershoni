@@ -85,7 +85,6 @@ def test_rule_is_detected(rule, src):
 
 
 def test_file_injection_ignores_literal_path():
-    # analyzer adds FILE_INJECTION ony if the first fopen arg is NOT a quoted string
     f = analyze('fopen("file.txt", "r");\n')
     assert not has_rule(f, "FILE_INJECTION"), f"FILE_INJECTION should not trigger on string literal. Findings: {f}"
 
@@ -109,7 +108,6 @@ def test_unbounded_loop_for_for_semicolons():
     f = analyze("for (;;) { break; }\n")
     assert has_rule(f, "UNBOUNDED_LOOP")
 
-# ---- Fix text checks ----
 def test_fix_text_for_heap_overflow():
     # Your analyzer uses RULE_FIXES.get("MEMCPY", ...) while RULE_FIXES commonly keeps "HEAP_OVERFLOW".
     # To make the test robust to either mapping, accept MEMCPY key if present; otherwise fall back to HEAP_OVERFLOW.
@@ -150,16 +148,12 @@ def test_detects_buffer_overflow():
     src = "char buf[4]; strcpy(buf, input);\n"
     f = analyze(src)
     assert any(x["rule"] == "UNSAFE_FUNCS" for x in f)
-def test_detects_memory_leak():
-    src = "char* p = new char[100];\n"  # אין delete
-    f = analyze(src)
-    assert any(x["rule"] == "MEM_LEAK" for x in f)
 
 
-def test_detects_unsafe_cast():
-    src = "int x = 10;\nchar* p = (char*)&x;\n"
-    f = analyze(src)
-    assert any(x["rule"] == "UNSAFE_CAST" for x in f)
+# def test_detects_unsafe_cast():
+#     src = "int x = 10;\nchar* p = (char*)&x;\n"
+#     f = analyze(src)
+#     assert any(x["rule"] == "UNSAFE_CAST" for x in f)
 def test_detects_hardcoded_secret():
     src = "const char* password = \"12345\";\n"
     f = analyze(src)

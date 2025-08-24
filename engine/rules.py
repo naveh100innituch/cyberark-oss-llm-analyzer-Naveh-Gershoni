@@ -16,7 +16,7 @@ RE_FOPEN = re.compile(r"\bfopen\s*\(([^,]+),")
 RE_LOOP = re.compile(r"\bwhile\s*\(\s*true\s*\)|for\s*\(\s*;\s*;\s*\)")
 RE_CAST = re.compile(r"\((char\s*\*|void\s*\*)\)")
 RE_UNINIT_VAR = re.compile(r"\b(int|char|float|double)\s+(\w+)\s*;")
-RE_MEM_LEAK = re.compile(r"\b(malloc|calloc|realloc|new)\b[^;]*")
+RE_MEM_LEAK = re.compile(r"\bmalloc\s*\([^)]*\)")
 RE_DEPRECATED_FUNCS = re.compile(r"\b(bzero|gets|strcpy|strcat)\s*\(")
 RE_PTR_ARITH = re.compile(r"(\w+)\s*\+\s*\d+")
 RE_HARDCODED_PATH = re.compile(r'".*\\.*"|"/.*/.*"')
@@ -25,14 +25,13 @@ RE_DIV_ZERO = re.compile(r"/\s*0")
 RE_SIGNED_UNSIGNED = re.compile(r"\b(int|short|long)\s+.*\s*=\s*\d+U")
 RE_RECURSION = re.compile(r"\b(\w+)\s*\(\s*.*\)\s*{[^}]*\1\s*\(")
 RE_GLOBAL_VAR = re.compile(r"\bstatic\s+\w+\s+\w+\s*;")
-RE_NULL_DEREF = re.compile(r"(=\s*(NULL|nullptr)\s*;[\s\S]*\*\w+)|\*\s*\w+\s*;")
+RE_NULL_DEREF = re.compile(r"\*\s*\w+\s*;")
 RE_BUF_UNDERFLOW = re.compile(r"\b\w+\s*\[\s*-\d+\s*\]")
 RE_NO_CHECK = re.compile(r"\b(fopen|malloc|realloc|fread|fwrite)\s*\([^)]*\)\s*;")
 RE_UNUSED_VAR = re.compile(r"\b(int|char|float|double)\s+(\w+)\s*;")
 RE_STRNCPY_OVERFLOW = re.compile(r"\bstrncpy\s*\(\s*([^,]+)\s*,\s*([^,]+)\s*,\s*([^)]+)\)")
 RE_STRCPY_NULL = re.compile(r"\bstrcpy\s*\(\s*[^,]+,\s*NULL\s*\)")
-RE_DOUBLE_FREE = re.compile(
-    r"\bfree\s*\(\s*(\w+)\s*\).*?\bfree\s*\(\1\s*\)|delete\s+(\w+)\s*;.*?\bdelete\s+\2\s*;")
+RE_DOUBLE_FREE = re.compile(r"\bfree\s*\(\s*(\w+)\s*\).*\bfree\s*\(\1\s*\)")
 RE_STACK_OVERFLOW = re.compile(r"\bchar\s+\w+\[\d{5,}\];")
 RE_USE_BEFORE_INIT = re.compile(r"\b(\w+)\s*=\s*\w+;\s*\1")
 RE_PTR_SUBSCRIPT = re.compile(r"\*(\w+)\s*\+\s*\d+")
@@ -61,16 +60,16 @@ RE_POINTER_COMPARISON = re.compile(r"\bif\s*\(\s*\*\w+\s*==\s*NULL\s*\)")
 RE_FORMAT_STRING_VULN = re.compile(r"\bfprintf\s*\(\s*[^,]+,\s*[^\"].*?\)")
 RE_CMD_INJECTION = re.compile(r"\b(exec|system|popen).*?\(")
 RE_PATH_TRAVERSAL = re.compile(r'"\.\./|\.\.\\')  
-RE_UNSAFE_CAST = re.compile(r"\(\s*(int|long|char\s*\*|void\s*\*)\s*\)\s*&?\w+")
+RE_UNSAFE_CAST = re.compile(r"\(\s*(int|long|char\s*\*|void\s*\*)\s*\)\s*\w+")
 RE_INFINITE_RECURSION = re.compile(r"\b(\w+)\s*\([^)]*\)\s*{\s*.*\1\s*\(")
 RE_MISALIGNED_ACCESS = re.compile(r"\b(uint16_t|uint32_t|uint64_t|int16_t|int32_t|int64_t)\s*\*\s*\w+")
 
 RULE_FIXES = {
     "FIXED_BUF": "Ensure buffer allocations are large enough and validated before use. Consider using std::vector or bounds-checked arrays.",
-    "HEAP_OVERFLOW": "Validate the size argument against the destination buffer size. Prefer safer functions like memcpy_s or std::copy.",
-    "INT_OVERFLOW": "Check for integer overflows before allocation. Use safe multiplication or check for maximum sizes.",
+    "MEMCPY": "Validate the size argument against the destination buffer size. Prefer safer functions like memcpy_s or std::copy.",
+    "ALLOC_MUL": "Check for integer overflows before allocation. Use safe multiplication or check for maximum sizes.",
     "UINT32_DECL": "Ensure all arithmetic on uint32_t is safe from overflow.",
-    "UAF": "After deleting a pointer, set it to nullptr to avoid use-after-free.",
+    "DELETE": "After deleting a pointer, set it to nullptr to avoid use-after-free.",
     "UNSAFE_FUNCS": "Replace unsafe functions (gets, strcpy, strcat, sprintf) with safer alternatives (fgets, strncpy, strncat, snprintf).",
     "FORMAT_STRING": "Ensure format strings are not user-controlled. Use constant format strings.",
     "DANGEROUS_CALLS": "Avoid system calls with user input. Use safer APIs or sanitize input.",

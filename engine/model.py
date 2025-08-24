@@ -6,7 +6,7 @@ _llm = None
 def _init_llm():
     global _llm
     if _llm is None:
-        model_path = r"C:\Users\המחשב שלי\Downloads\cyberark-oss-llm-analyzer\cyberark-oss-llm-analyzer\models\gemma-3-1b-it.fp16.gguf"
+        model_path = os.environ.get("MODEL_PATH")
         if not model_path or not os.path.exists(model_path):
             raise ValueError(f"Model path does not exist: {model_path}")
         _llm = Llama(model_path=model_path, n_ctx=4096, n_threads=4, verbose=False)

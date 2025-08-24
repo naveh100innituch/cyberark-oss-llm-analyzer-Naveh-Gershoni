@@ -7,7 +7,6 @@ from engine import formats
 from engine import model as model_engine
 from engine.rules import RULE_FIXES
 
-
 def main():
     ap = argparse.ArgumentParser(description="Local C/C++ vulnerability analyzer (rules + optional local LLM).")
     ap.add_argument("path", help="Path to a C/C++ source file")
